@@ -1,0 +1,61 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Reloj {
+  id               Int      @id @default(autoincrement())
+  nombre           String
+  marca            String
+  precio           Float
+  materiales       String[] 
+  imagen           String
+  resistencia_agua String
+  categoria        String
+  stock            Int
+  destacado        Boolean  @default(false) 
+  detalles_breve   String
+  detalles         String
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  favoritos        Favorito[]
+
+  @@map("reloj")
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  apellido  String
+  
+  email     String   @unique
+  password  String  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  favoritos Favorito[]
+
+  @@map("usuario")
+}
+
+model Favorito {
+  id         Int      @id @default(autoincrement())
+  idUsuario  Int
+  idProducto Int
+
+  usuario    Usuario  @relation(fields: [idUsuario], references: [id], onDelete: Cascade)
+  reloj      Reloj    @relation(fields: [idProducto], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+
+  @@unique([idUsuario, idProducto]) 
+  
+  @@map("favorito")
+}
