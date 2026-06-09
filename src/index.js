@@ -25,7 +25,7 @@ app.get('/', (req, res) => {
   res.send('API de Tempo Deluxe funcionando correctamente ⌚');
 });
 
-app.use('/api/relojes', relojesRoutes);
+app.use('/api/items', relojesRoutes);
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor backend corriendo en http://localhost:${PORT}`);
