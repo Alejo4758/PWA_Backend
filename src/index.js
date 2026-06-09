@@ -7,7 +7,11 @@ import relojesRoutes from './routes/relojes.js';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+const opcionesCors = {
+  origin: process.env.FRONTEND_URL || '*', 
+};
+app.use(cors(opcionesCors));
+
 app.use(express.json());
 
 // Prueba de conexión
@@ -25,8 +29,8 @@ app.get('/', (req, res) => {
   res.send('API de Tempo Deluxe funcionando correctamente ⌚');
 });
 
-app.use('/api/items', relojesRoutes);
+app.use('/api/items', relojesRoutes); 
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor backend corriendo en http://localhost:${PORT}`);
+  console.log(`🚀 Servidor backend corriendo en el puerto ${PORT}`);
 });
