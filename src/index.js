@@ -8,8 +8,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 const opcionesCors = {
-  origin: process.env.FRONTEND_URL || '*', 
+  origin: 'https://pwa-frontend-one.vercel.app', 
 };
+
 app.use(cors(opcionesCors));
 
 app.use(express.json());
