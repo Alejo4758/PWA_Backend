@@ -31,6 +31,12 @@ app.get('/', (req, res) => {
 
 app.use('/api/items', relojesRoutes); 
 
+app.use((req, res) => {
+  res.status(404).json({ error: "Ruta no encontrada" });
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Servidor backend corriendo en el puerto ${PORT}`);
 });
+
+export default app;
