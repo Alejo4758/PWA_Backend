@@ -3,7 +3,11 @@ import { validarReloj } from '../validations/index.js';
 
 export const obtenerRelojes = async (req, res, next) => {
   try {
-    const relojes = await relojService.obtenerTodos();
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 4;
+    const nombre = req.query.nombre || '';
+
+    const relojes = await relojService.obtenerTodos({ page, limit, nombre });
     res.status(200).json(relojes);
   } catch (error) {
     next(error);
