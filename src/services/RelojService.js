@@ -1,7 +1,16 @@
 import prisma from '../../prisma/prismaClient.js';
 
-export const obtenerTodos = async () => {
-    return await prisma.reloj.findMany();
+export const obtenerTodos = async ({ page = 1, limit = 10, nombre = '' } = {}) => {
+    const skip = (page - 1) * limit;
+    const where = nombre
+        ? { nombre: { contains: nombre, mode: 'insensitive' } }
+        : {};
+
+    return await prisma.reloj.findMany({
+        skip,
+        take: limit,
+        where,
+    });
 };
 
 export const obtenerPorId = async id => {
