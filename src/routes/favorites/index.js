@@ -6,7 +6,7 @@ const router = Router();
 
 router.use(authMiddleware);
 router.get('/', getFavorites);
-router.post('/', addFavorite);
+router.post('/:id', addFavorite);
 router.delete('/:id', removeFavorite);
 
 export default router;
