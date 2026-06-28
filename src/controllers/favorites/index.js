@@ -49,8 +49,39 @@ export const addFavorite = async (req, res, next) => {
 };
 
 export const removeFavorite = async (req, res, next) => {
+
   try {
-    return res.status(501).json({ message: 'Eliminar favorito aún no implementado.' });
+    const idProducto = parseInt(req.params.id);
+    const idUsuario = req.idUsuario;
+
+    if (isNaN(idProducto)) {
+      return res.status(400).json({ error: 'El ID del producto es inválido' });
+    }
+
+    const favoritosExistente = await prisma.favorito.findFirst({
+      where: {
+        idUsuario: idUsuario,
+        idProducto: idProducto
+      }
+    });
+
+    if (!favoritosExistente) {
+      return res.status(404).json({
+        error: 'No Encontrado',
+        message: 'El Favorito no Existe para este Usuario'
+      });
+    }
+
+    await prisma.favorito.delete({
+      where: {
+        id: favoritosExistente.id
+      }
+    });
+
+    return res.status(200).json({
+      mensaje: 'Favorito Eliminado Correctamente'
+    })
+
   } catch (error) {
     next(error);
   }
