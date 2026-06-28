@@ -2,6 +2,36 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import prisma from '../../../prisma/prismaClient.js';
 
+export const getMe = async (req, res, next) => {
+  try {
+    const idUsuario = Number(req.idUsuario);
+
+    if (!idUsuario) {
+      return res.status(401).json({ error: 'Token inválido' });
+    }
+
+    const usuario = await prisma.usuario.findUnique({
+      where: { id: idUsuario },
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        email: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!usuario) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    return res.status(200).json({ usuario });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
