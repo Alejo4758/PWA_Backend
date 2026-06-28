@@ -3,6 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import prisma from '../prisma/prismaClient.js';
 import relojesRoutes from './routes/relojes.js';
+import authRoutes from './routes/auth/index.js';
+import favoritesRoutes from './routes/favorites/index.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,7 +32,9 @@ app.get('/', (req, res) => {
   res.send('API de Tempo Deluxe funcionando correctamente ⌚');
 });
 
-app.use('/api/items', relojesRoutes); 
+app.use('/api/items', relojesRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/favorites', favoritesRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: "Ruta no encontrada" });
