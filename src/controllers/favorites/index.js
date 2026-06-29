@@ -2,19 +2,32 @@ import prisma from "../../../prisma/prismaClient.js"
 
 export const getFavorites = async (req, res, next) => {
   try {
-    return res.status(501).json({ message: 'Listado de favoritos aún no implementado.' });
+    const idUsuario = req.idUsuario;
+
+    const favoritos = await prisma.favorito.findMany({
+      where: { idUsuario },
+      include: {
+        reloj: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    res.status(200).json({
+      mensaje: 'Favoritos obtenidos correctamente',
+      favoritos,
+    });
   } catch (error) {
     next(error);
   }
 };
 
-// controllers/favorites/index.js
 export const addFavorite = async (req, res, next) => {
   try {
-    const idProducto = parseInt(req.params.id); // El ID del reloj viene en la URL
-    const idUsuario = req.idUsuario;            // Del token
+    const idProducto = parseInt(req.params.id);
+    const idUsuario = req.idUsuario;
 
-    // 1. Verificar que el reloj exista (usando el modelo Reloj)
     const reloj = await prisma.reloj.findUnique({
       where: { id: idProducto },
     });
@@ -23,7 +36,6 @@ export const addFavorite = async (req, res, next) => {
       return res.status(404).json({ error: 'Reloj no encontrado' });
     }
 
-    // 2. Crear el favorito usando connect para ambas relaciones
     const nuevoFavorito = await prisma.favorito.create({
       data: {
         usuario: { connect: { id: idUsuario } },
@@ -37,7 +49,6 @@ export const addFavorite = async (req, res, next) => {
       favorito: nuevoFavorito,
     });
   } catch (error) {
-    // Si el favorito ya existe (viola la restricción unique)
     if (error.code === 'P2002') {
       return res.status(409).json({
         error: 'Conflicto',
