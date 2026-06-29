@@ -9,9 +9,10 @@ import favoritesRoutes from './routes/favorites/index.js';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS 
-  ? process.env.ALLOWED_ORIGINS.split(',') 
-  : [];
+const allowedOrigins = [
+  'https://pwa-frontend-one.vercel.app',
+  'http://localhost:5173'
+];
 
 const opcionesCors = {
   origin: function (origin, callback) {
