@@ -1,7 +1,6 @@
 # 🧩 Tempo Deluxe — Backend
 
-Backend API REST para la aplicación Tempo Deluxe, desarrollada como proyecto principal de la materia **Programación Web Avanzada** en la **Universidad Nacional del Comahue**. El servidor provee una API completa para gestionar un catálogo de relojes de lujo, conectada a una base de datos PostgreSQL mediante Prisma ORM.
-
+Backend API REST para la aplicación Tempo Deluxe, desarrollada como proyecto principal de la materia **Programación Web Avanzada** en la **Universidad Nacional del Comahue**. El servidor provee una API completa para gestionar un catálogo de relojes de lujo, con autenticación de usuarios mediante JWT y sistema de favoritos persistidos por usuario.
 
 ## 👥 Integrantes
 
@@ -11,18 +10,16 @@ Backend API REST para la aplicación Tempo Deluxe, desarrollada como proyecto pr
 | Facundo Ledesma | Developer |
 | Benjamín de la Fuente | Developer |
 
-
 ## 🔗 Links
 
-- 🖥️ [Repositorio del Frontend](<https://github.com/FacuLedesmaBertalot/PWA_Frontend.git>)
-- 📋 [Tablero Kanban](<https://github.com/users/Alejo4758/projects/3>)
-- 🚀 [Deploy del Backend](<https://pwa-backend-two.vercel.app/>)
-- 🌐 [Deploy del Frontend](<https://pwa-frontend-one.vercel.app/>)
-
+- 🖥️ [Repositorio del Frontend](https://github.com/FacuLedesmaBertalot/PWA_Frontend.git)
+- 📋 [Tablero Kanban](https://github.com/users/Alejo4758/projects/3)
+- 🚀 [Deploy del Backend](https://pwa-backend-two.vercel.app/)
+- 🌐 [Deploy del Frontend](https://pwa-frontend-one.vercel.app/)
 
 ## 📖 Descripción de la aplicación
 
-Tempo Deluxe es una aplicación web de catálogo de relojes de lujo. Permite explorar, buscar y gestionar una colección de relojes de las marcas más reconocidas del mundo. Los usuarios pueden ver el detalle de cada pieza y agregarla a favoritos. El catálogo completo puede gestionarse mediante operaciones CRUD a través de la API.
+Tempo Deluxe es una aplicación web de catálogo de relojes de lujo. Permite explorar, buscar y gestionar una colección de relojes de las marcas más reconocidas del mundo. Los usuarios pueden registrarse, iniciar sesión, ver el detalle de cada pieza y gestionar sus favoritos de forma persistida. El catálogo completo puede administrarse mediante operaciones CRUD a través de la API.
 
 ## ⌚ Entidad principal — Reloj
 
@@ -44,7 +41,6 @@ La entidad principal del proyecto es `Reloj`, que representa una pieza del catá
 | `detalles` | String | Descripción completa del reloj |
 | `createdAt` | DateTime | Fecha de creación del registro |
 | `updatedAt` | DateTime | Fecha de última actualización |
-
 
 ## ⚙️ Instalación y ejecución local
 
@@ -91,7 +87,6 @@ npm run dev
 
 El servidor quedará corriendo en `http://localhost:3000`.
 
-
 ## 🔐 Variables de entorno
 
 Crear un archivo `.env` en la raíz del proyecto con las siguientes variables:
@@ -100,10 +95,10 @@ Crear un archivo `.env` en la raíz del proyecto con las siguientes variables:
 DATABASE_URL=        # Connection string de PostgreSQL (Neon u otro proveedor)
 PORT=3000            # Puerto en el que corre el servidor
 FRONTEND_URL=        # URL del frontend (para configurar CORS)
+JWT_SECRET=          # Clave secreta para firmar los tokens JWT
 ```
 
 > ⚠️ No subir el archivo `.env` al repositorio. Las credenciales se comparten por mensajería privada.
-
 
 ## 🗄️ Migraciones
 
@@ -119,7 +114,6 @@ Para regenerar el cliente de Prisma:
 npx prisma generate
 ```
 
-
 ## 🌱 Seed
 
 Para cargar los datos iniciales en la base de datos:
@@ -130,11 +124,42 @@ npx prisma db seed
 
 Esto crea 32 registros de relojes de distintas marcas (Rolex, Omega, Longines, Cartier, Seiko, entre otras) con todos sus campos completos.
 
-
 ## 📡 Endpoints de la API
 
+### Health check
 
-### Relojes
+```
+GET /api/health
+```
+
+Respuesta:
+```json
+{
+  "status": "ok",
+  "message": "API funcionando correctamente"
+}
+```
+
+### 🔑 Autenticación
+
+| Método | Endpoint | Descripción | Autenticación |
+|--------|----------|-------------|---------------|
+| POST | `/auth/register` | Registrar un nuevo usuario | No |
+| POST | `/auth/login` | Iniciar sesión | No |
+| POST | `/auth/logout` | Cerrar sesión | Sí |
+| GET | `/auth/me` | Obtener datos del usuario autenticado | Sí |
+
+### ⭐ Favoritos
+
+| Método | Endpoint | Descripción | Autenticación |
+|--------|----------|-------------|---------------|
+| GET | `/favorites` | Listar favoritos del usuario autenticado | Sí |
+| POST | `/favorites/:id` | Agregar un reloj a favoritos | Sí |
+| DELETE | `/favorites/:id` | Quitar un reloj de favoritos | Sí |
+
+> Los endpoints de favoritos obtienen el usuario a partir del token JWT. No se recibe el id de usuario por body ni por parámetro.
+
+### ⌚ Relojes
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
@@ -152,8 +177,62 @@ Esto crea 32 registros de relojes de distintas marcas (Rolex, Omega, Longines, C
 | POST exitoso | 201 |
 | DELETE exitoso | 204 |
 | Body inválido | 400 |
+| Credenciales inválidas | 401 |
+| Token inválido | 403 |
 | Recurso no encontrado | 404 |
+| Conflicto (email o favorito duplicado) | 409 |
 | Error del servidor | 500 |
+
+### ✨ Ejemplo — Registro de usuario
+
+**Request:**
+```
+POST /auth/register
+Content-Type: application/json
+```
+```json
+{
+  "nombre": "Juan Pérez",
+  "email": "juan@ejemplo.com",
+  "password": "miContraseña123"
+}
+```
+
+**Respuesta exitosa (201):**
+```json
+{
+  "id": 1,
+  "nombre": "Juan Pérez",
+  "email": "juan@ejemplo.com",
+  "createdAt": "2026-06-09T12:00:00.000Z"
+}
+```
+
+### ✨ Ejemplo — Login
+
+**Request:**
+```
+POST /auth/login
+Content-Type: application/json
+```
+```json
+{
+  "email": "juan@ejemplo.com",
+  "password": "miContraseña123"
+}
+```
+
+**Respuesta exitosa (200):**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": 1,
+    "nombre": "Juan Pérez",
+    "email": "juan@ejemplo.com"
+  }
+}
+```
 
 ### ✨ Ejemplo — Crear un reloj
 
@@ -224,7 +303,13 @@ Content-Type: application/json
 }
 ```
 
----
+## 🔒 Seguridad
+
+- Las contraseñas se hashean con `bcrypt` antes de guardarse en la base de datos.
+- El password nunca se devuelve en ninguna respuesta de la API.
+- Los tokens JWT se firman con la variable de entorno `JWT_SECRET`.
+- Las rutas privadas están protegidas mediante el middleware `auth.middleware.js`.
+- El usuario autenticado se obtiene siempre desde el token, nunca desde el body o parámetros del cliente.
 
 ## 📂 Estructura del proyecto
 
@@ -232,30 +317,35 @@ Content-Type: application/json
 PWA_Backend/
 │
 ├── src/
-│   ├── index.js                        # Punto de entrada y configuración de Express
+│   ├── index.js                          # Punto de entrada y configuración de Express
 │   ├── controllers/
-│   │   └── RelojController.js          # Lógica de cada endpoint
-│   ├── services/
-│   │   └── RelojService.js             # Interacción con Prisma
+│   │   ├── auth/
+│   │   │   └── index.js                  # Lógica de registro, login, logout y me
+│   │   ├── favorites/
+│   │   │   └── index.js                  # Lógica de favoritos
+│   │   └── RelojController.js            # Lógica de endpoints de relojes
+│   ├── middlewares/
+│   │   ├── auth.middleware.js            # Middleware de autenticación JWT
+│   │   └── errorHandler.js              # Middleware global de errores
 │   ├── routes/
-│   │   └── relojes.js                  # Definición de rutas
-│   ├── validations/
-│   │   ├── index.js                    # Orquestador de validaciones
-│   │   ├── schemas.js                  # Esquemas por modelo
-│   │   ├── validators.js               # Funciones helper de validación
-│   │   └── constants.js                # Enums y valores permitidos
-│   └── middlewares/
-│       └── errorHandler.js             # Middleware global de errores
+│   │   ├── auth/
+│   │   │   └── index.js                  # Rutas de autenticación
+│   │   ├── favorites/
+│   │   │   └── index.js                  # Rutas de favoritos
+│   │   └── relojes.js                    # Rutas de relojes
+│   ├── services/                         # Lógica de negocio e interacción con Prisma
+│   ├── validations/                      # Validaciones manuales de entrada
+│   └── index.js                          # Orquestador de validaciones
 │
 ├── prisma/
-│   ├── prismaClient.js                 # Instancia única de PrismaClient
-│   ├── schema.prisma                   # Modelo de datos
-│   ├── seed.js                         # Datos iniciales
-│   └── migrations/                     # Migraciones generadas por Prisma
+│   ├── prismaClient.js                   # Instancia única de PrismaClient
+│   ├── schema.prisma                     # Modelo de datos
+│   ├── seed.js                           # Datos iniciales
+│   └── migrations/                       # Migraciones generadas por Prisma
 │
-├── .env.example                        # Variables de entorno de ejemplo
+├── .env.example                          # Variables de entorno de ejemplo
 ├── .gitignore
-├── vercel.json                         # Configuración de deploy en Vercel
+├── vercel.json                           # Configuración de deploy en Vercel
 ├── package.json
 └── README.md
 ```
